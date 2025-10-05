@@ -72,35 +72,43 @@ def scatter(xy_datasets_pair: list[list[list[float]]]):
     plt.show(block=True)
 
 
-if __name__ == "__main__":
-    global_datasets: list[list[list[float]]] = [[], []]
-
-    # Файлы
-    file_num = 1
+def ask_user_for_datasets(file_num_init: int = 1) -> list[list[list[float]]]:
+    user_datasets: list[list[list[float]]] = [[], []]
+    file_num = file_num_init
     while True:
         if input(f"Добавить файл №{file_num}? [Y,n] ") == "n": break
         file_num += 1
         datasets = ask_file_and_get_datasets()
         for i in range(2):
             for j in datasets[i]:
-                global_datasets[i].append(j)
-    assert len(global_datasets[0]) == len(global_datasets[1]), "Количество датасетов не совпадает!"
-    assert len(global_datasets[0]) > 0, "Количество датасетов <= 0!"
+                user_datasets[i].append(j)
+    assert len(user_datasets[0]) == len(user_datasets[1]), "Количество датасетов не совпадает!"
+    assert len(user_datasets[0]) > 0, "Количество датасетов <= 0!"
+    return user_datasets
 
-    # Сортировка
-    for i in range(len(global_datasets[0])):
-        global_datasets[0][i], global_datasets[1][i] = sort_dataset_pair_respectfully(
-            [global_datasets[0][i], global_datasets[1][i]])
 
-    # Выбор построения
-    indices_answer = input(f"Обнаружено датасетов: {len(global_datasets[0])}. Введите через пробел индексы датасетов, которые нужно нарисовать на одном графике: (оставьте пустым для вывода всех)")
+def sort_global_dataset(global_dataset: list[list[list[float]]]):
+    for i in range(len(global_dataset[0])):
+        global_dataset[0][i], global_dataset[1][i] = sort_dataset_pair_respectfully(
+            [global_dataset[0][i], global_dataset[1][i]])
+
+
+def choose_datasets_and_scatter(global_dataset: list[list[list[float]]]):
+    indices_answer = input(
+        f"Обнаружено датасетов: {len(global_dataset[0])}. Введите через пробел индексы датасетов, которые нужно нарисовать на одном графике: (оставьте пустым для вывода всех)")
     indices_to_print: list[int]
     if indices_answer == "":
-        indices_to_print = list(range(len(global_datasets[0])))
+        indices_to_print = list(range(len(global_dataset[0])))
     else:
         indices_to_print = [int(i) for i in indices_answer.split(" ")]
     datasets_to_print: list[list[list[float]]] = [[], []]
     for i in indices_to_print:
-        datasets_to_print[0].append(global_datasets[0][i])
-        datasets_to_print[1].append(global_datasets[1][i])
+        datasets_to_print[0].append(global_dataset[0][i])
+        datasets_to_print[1].append(global_dataset[1][i])
     scatter(datasets_to_print)
+
+
+if __name__ == "__main__":
+    global_datasets: list[list[list[float]]] = ask_user_for_datasets()
+    sort_global_dataset(global_datasets)
+    choose_datasets_and_scatter(global_datasets)

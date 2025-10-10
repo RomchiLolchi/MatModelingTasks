@@ -95,7 +95,7 @@ def sort_global_dataset(global_dataset: list[list[list[float]]]):
 
 def choose_datasets_and_scatter(global_dataset: list[list[list[float]]]):
     indices_answer = input(
-        f"Обнаружено датасетов: {len(global_dataset[0])}. Введите через пробел индексы датасетов, которые нужно нарисовать на одном графике: (оставьте пустым для вывода всех)")
+        f"Обнаружено датасетов: {len(global_dataset[0])}. Введите через пробел индексы датасетов, которые нужно нарисовать на одном графике: (оставьте пустым для вывода всех) ")
     indices_to_print: list[int]
     if indices_answer == "":
         indices_to_print = list(range(len(global_dataset[0])))

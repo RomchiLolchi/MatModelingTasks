@@ -1,4 +1,6 @@
 # Задание 2 - аппроксимация
+#todo толщину линий уменьшить
+#todo ставить опорные точки на графике
 import scipy
 import FirstTask.dot_plotting as dp
 import numpy as np

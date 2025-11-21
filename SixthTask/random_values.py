@@ -1,7 +1,4 @@
 # Задание 6 - решение нелинейных уравнений
-#TODO РЕШИТЬ ВСЕ TODO СНИЗУ И ПОКАЗАТЬ РЕШЕНИЕ
-#todo 76 формула пропущена; в целом везде вторая дисперсия потеряна (теор.) - показать разницу теор. и практ. дисп-й
-#todo Нормировка гистограмм! (теория выше практики, множитель непр. или потерян, высота столбцов не та)
 import math
 from datetime import datetime
 from numpy import random
@@ -59,7 +56,7 @@ while len(x_rayleigh) < N:
 x_rayleigh = np.array(x_rayleigh)
 
 
-def get_moments(arr):
+def get_moments(arr, m_theor):
     N = len(arr)
 
     S1 = 0
@@ -72,12 +69,17 @@ def get_moments(arr):
         S2 += (x - m_sample) ** 2
     D_sample = S2 / N
 
-    return m_sample, D_sample
+    D_theor = 0
+    for x in arr:
+        D_theor += (x - m_theor) ** 2
+    D_theor = D_theor / N
+
+    return m_sample, D_sample, D_theor
 
 
-mom_u, var_u = get_moments(x_uniform)
-mom_g, var_g = get_moments(x_gauss)
-mom_r, var_r = get_moments(x_rayleigh)
+mom_u, var_u, d_theor_u = get_moments(x_uniform, uniform_mean)
+mom_g, var_g, d_theor_g = get_moments(x_gauss, m)
+mom_r, var_r, d_theor_r = get_moments(x_rayleigh, mrter)
 
 
 def manual_hist(data, title, pdf_func=None, cdf_func=None):
@@ -91,7 +93,7 @@ def manual_hist(data, title, pdf_func=None, cdf_func=None):
 
     intervals = [(A + i * dx, A + (i + 1) * dx) for i in range(k)]
     freq = [sum((data >= low) & (data < high)) for low, high in intervals]
-    delta = [f / N for f in freq]
+    delta = [f / (N * dx) for f in freq]
 
     centers = [(low + high) / 2 for low, high in intervals]
 
@@ -106,7 +108,7 @@ def manual_hist(data, title, pdf_func=None, cdf_func=None):
         x_plot = np.linspace(A, B, N)
         plt.plot(x_plot, pdf_func(x_plot), linewidth=2)
 
-    cumsum = np.cumsum(delta)
+    cumsum = np.cumsum(delta) * dx
     plt.subplot(1, 2, 2)
     x_vals = [low for low, _ in intervals] + [intervals[-1][1]]
     y_vals = [0] + list(cumsum)
@@ -147,6 +149,6 @@ manual_hist(
 
 print("\n===== РЕЗУЛЬТАТЫ =====")
 print(
-    f"Равномерное:   M выборочное={mom_u:.4f}, D выборочная={var_u:.4f}, M теор={uniform_mean:.4f}, D теор={uniform_var:.4f}")
-print(f"Гауссовское:   M выборочное={mom_g:.4f}, D выборочная={var_g:.4f}, M теор={m:.4f}, D теор={D2:.4f}")
-print(f"Релеевское:    M выборочное={mom_r:.4f}, D выборочная={var_r:.4f}, M теор={mrter:.4f}, D теор={disprter:.4f}")
+    f"Равномерное:   M выборочное={mom_u:.4f}, D выборочная={var_u:.4f}, D с известным m={d_theor_u:.4f}, M теор={uniform_mean:.4f}, D теор={uniform_var:.4f}")
+print(f"Гауссовское:   M выборочное={mom_g:.4f}, D выборочная={var_g:.4f}, D с известным m={d_theor_g:.4f}, M теор={m:.4f}, D теор={D2:.4f}")
+print(f"Релеевское:    M выборочное={mom_r:.4f}, D выборочная={var_r:.4f}, D с известным m={d_theor_r:.4f}, M теор={mrter:.4f}, D теор={disprter:.4f}")

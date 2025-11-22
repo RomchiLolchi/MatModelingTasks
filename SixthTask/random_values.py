@@ -1,9 +1,11 @@
 # Задание 6 - решение нелинейных уравнений
+# todo НОРМАЛИЗАЦИЯ ЕЩЁ РАЗ!!!! (проверка с большим/меньшим усечением; с параметрами)
 import math
 from datetime import datetime
 from numpy import random
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import quad
 from scipy.special import erf
 
 N_default = 1000
@@ -37,6 +39,11 @@ bcoef = float(input(f"Введите параметр b (по умолчанию
 
 mrter = math.sqrt(math.pi * bcoef**2 / 2)
 disprter =  (2 - math.pi/2) * bcoef**2
+
+
+def rayleigh_pdf_vector(x, b):
+    return np.where(x >= 0, (x / (b * b)) * np.exp(-(x**2) / (2 * b**2)), 0)
+
 
 def rayleigh_pdf(x, b):
     return (x / (b * b)) * np.exp(-(x * x) / (2 * b * b)) if x >= 0 else 0
@@ -108,7 +115,7 @@ def manual_hist(data, title, pdf_func=None, cdf_func=None):
         x_plot = np.linspace(A, B, N)
         plt.plot(x_plot, pdf_func(x_plot), linewidth=2)
 
-    cumsum = np.cumsum(delta) * dx
+    cumsum = np.cumsum(freq) / N
     plt.subplot(1, 2, 2)
     x_vals = [low for low, _ in intervals] + [intervals[-1][1]]
     y_vals = [0] + list(cumsum)
@@ -140,15 +147,27 @@ manual_hist(
     cdf_func=lambda x: 0.5 * (1 + erf((x - m) / np.sqrt(2 * D2)))
 )
 
+Z, _ = quad(lambda x: rayleigh_pdf(x, bcoef), a, b)
 manual_hist(
     x_rayleigh,
     "Релеевское распределение",
-    pdf_func=lambda x: np.where(x >= 0, (x / (bcoef * bcoef)) * np.exp(-(x * x) / (2 * bcoef * bcoef)), 0),
-    cdf_func=lambda x: np.where(x >= 0, 1 - np.exp(-(x * x) / (2 * bcoef * bcoef)), 0)
+    # УРЕЗКА + НОРМИРОВКА
+    # pdf_func=lambda x: np.where((x >= a) & (x <= b), rayleigh_pdf_vector(x, bcoef) / Z, 0),
+    # cdf_func=lambda x: np.where(x < a, 0, np.where(x > b, 1, np.array(
+    #     [quad(lambda t: rayleigh_pdf_vector(t, bcoef), a, xi)[0] / Z for xi in x])))
+    # ОБЫЧНЫЕ ФУНКЦИИ:
+    # pdf_func=lambda x: np.where(x >= 0, (x / (bcoef ** 2)) * np.exp(-x**2 / (2 * bcoef**2)), 0),
+    # cdf_func=lambda x: np.where(x >= 0, 1 - np.exp(-x**2 / (2 * bcoef**2)), 0),
+    # НОРМИРОВКА
+    pdf_func=lambda x: np.where(x >= 0, rayleigh_pdf_vector(x, bcoef) / Z, 0),
+    cdf_func=lambda x: np.where(x >= 0, np.array(
+         [quad(lambda t: rayleigh_pdf_vector(t, bcoef), a, xi)[0] / Z for xi in x]), 0)
 )
 
 print("\n===== РЕЗУЛЬТАТЫ =====")
 print(
-    f"Равномерное:   M выборочное={mom_u:.4f}, D выборочная={var_u:.4f}, D с известным m={d_theor_u:.4f}, M теор={uniform_mean:.4f}, D теор={uniform_var:.4f}")
-print(f"Гауссовское:   M выборочное={mom_g:.4f}, D выборочная={var_g:.4f}, D с известным m={d_theor_g:.4f}, M теор={m:.4f}, D теор={D2:.4f}")
-print(f"Релеевское:    M выборочное={mom_r:.4f}, D выборочная={var_r:.4f}, D с известным m={d_theor_r:.4f}, M теор={mrter:.4f}, D теор={disprter:.4f}")
+    f"Равномерное:   M выборочное={mom_u:.4f}, D выборочная={var_u:.7f}, D с известным m={d_theor_u:.7f}, M теор={uniform_mean:.4f}, D теор={uniform_var:.4f}")
+print(
+    f"Гауссовское:   M выборочное={mom_g:.4f}, D выборочная={var_g:.7f}, D с известным m={d_theor_g:.7f}, M теор={m:.4f}, D теор={D2:.4f}")
+print(
+    f"Релеевское:    M выборочное={mom_r:.4f}, D выборочная={var_r:.7f}, D с известным m={d_theor_r:.7f}, M теор={mrter:.4f}, D теор={disprter:.4f}")

@@ -1,5 +1,4 @@
-# Задание 6 - решение нелинейных уравнений
-# todo НОРМАЛИЗАЦИЯ ЕЩЁ РАЗ!!!! (проверка с большим/меньшим усечением; с параметрами)
+# Задание 6 - Случайные величины
 import math
 from datetime import datetime
 from numpy import random
@@ -37,12 +36,12 @@ x_gauss = np.array([(sum(random.random(size=n)) - mv) / Dv * math.sqrt(D2) + m f
 bcoef_default = 3.0
 bcoef = float(input(f"Введите параметр b (по умолчанию {bcoef_default}): ") or bcoef_default)
 
-mrter = math.sqrt(math.pi * bcoef**2 / 2)
-disprter =  (2 - math.pi/2) * bcoef**2
+mrter = math.sqrt(math.pi * bcoef ** 2 / 2)
+disprter = (2 - math.pi / 2) * bcoef ** 2
 
 
 def rayleigh_pdf_vector(x, b):
-    return np.where(x >= 0, (x / (b * b)) * np.exp(-(x**2) / (2 * b**2)), 0)
+    return np.where(x >= 0, (x / (b * b)) * np.exp(-(x ** 2) / (2 * b ** 2)), 0)
 
 
 def rayleigh_pdf(x, b):
@@ -147,6 +146,13 @@ manual_hist(
     cdf_func=lambda x: 0.5 * (1 + erf((x - m) / np.sqrt(2 * D2)))
 )
 
+
+def rayleigh_pdf(x, sigma):
+    return (x / sigma**2) * np.exp(-x**2 / (2*sigma**2))
+
+def rayleigh_cdf(x, sigma):
+    return 1 - np.exp(-x**2 / (2*sigma**2))
+
 Z, _ = quad(lambda x: rayleigh_pdf(x, bcoef), a, b)
 manual_hist(
     x_rayleigh,
@@ -159,9 +165,21 @@ manual_hist(
     # pdf_func=lambda x: np.where(x >= 0, (x / (bcoef ** 2)) * np.exp(-x**2 / (2 * bcoef**2)), 0),
     # cdf_func=lambda x: np.where(x >= 0, 1 - np.exp(-x**2 / (2 * bcoef**2)), 0),
     # НОРМИРОВКА
-    pdf_func=lambda x: np.where(x >= 0, rayleigh_pdf_vector(x, bcoef) / Z, 0),
-    cdf_func=lambda x: np.where(x >= 0, np.array(
-         [quad(lambda t: rayleigh_pdf_vector(t, bcoef), a, xi)[0] / Z for xi in x]), 0)
+    # pdf_func=lambda x: np.where(x >= 0, rayleigh_pdf_vector(x, bcoef) / Z, 0),
+    # cdf_func=lambda x: np.where(x >= 0, np.array(
+    #      [quad(lambda t: rayleigh_pdf_vector(t, bcoef), a, xi)[0] / Z for xi in x]), 0)
+
+
+    pdf_func=lambda x: np.where((x >= a), # & (x <= b)
+                                rayleigh_pdf(x, bcoef),
+                                0.0),
+    cdf_func=lambda x: np.where(x < a,
+                                0.0,
+                                np.where(x > b,
+                                         rayleigh_cdf(b, bcoef) - rayleigh_cdf(a, bcoef),
+                                         rayleigh_cdf(x, bcoef) - rayleigh_cdf(a, bcoef)
+                                         )
+                                )
 )
 
 print("\n===== РЕЗУЛЬТАТЫ =====")

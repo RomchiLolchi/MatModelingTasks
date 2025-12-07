@@ -1,4 +1,5 @@
 # Задание 6 - Случайные величины
+#todo Построение Релеевской сл. в-ны при отриц. зн-ях аргумента некорректно, оранжевая линия (CDF) неверна
 import math
 from datetime import datetime
 from numpy import random

@@ -1,5 +1,4 @@
 # Задание 7 - МНК (аппроксимация методом наименьших квадратов; методы регрессионного анализа)
-#todo Убрать кусочно-линейную природу графика, т.е. сделать его гладким; попробовать сделать это через np.linspace на иксах
 import numpy as np
 import FirstTask.dot_plotting as dp
 import math
@@ -77,6 +76,11 @@ if __name__ == "__main__":
 
         sse += error**2
 
+    newx = np.linspace(min(x), max(x), 1000)
+    newy = list()
+    for xi in newx:
+        newy.append(horner(coeffs, xi))
+
     print("\nТаблица:")
     print(tabulate([
         ["x_i"] + [str(r) for r in x],
@@ -88,5 +92,5 @@ if __name__ == "__main__":
     print(f"\nСуммарная квадратичная ошибка: {sse}")
 
     plt.scatter(x, y)
-    plt.plot(x, guesses)
+    plt.plot(newx, newy)
     plt.show()
